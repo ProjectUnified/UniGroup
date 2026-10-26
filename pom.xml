@@ -5,11 +5,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.projectunified</groupId>
-    <artifactId>MavenTemplate</artifactId>
+    <artifactId>uni-group</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>core</module>
+        <module>superiorskyblock</module>
+        <module>husktowns</module>
+        <module>towny</module>
+        <module>bentobox</module>
+        <module>factionsuuid</module>
+        <module>kingdoms</module>
+        <module>lands</module>
+        <module>betterteams</module>
+        <module>parties</module>
+        <module>mcmmo</module>
+        <module>simpleclans</module>
+        <module>factionsbridge</module>
+        <module>placeholderapi</module>
+        <module>builder</module>
+    </modules>
 
-    <name>MavenTemplate</name>
-    <description>A template for ProjectUnified's projects</description>
+    <name>UniGroup</name>
+    <description>A unified library for group plugins</description>
     <url>https://github.com/ProjectUnified/${project.name}</url>
 
     <licenses>
@@ -42,6 +60,77 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>bg-repo</id>
+            <url>https://repo.bg-software.com/repository/api/</url>
+        </repository>
+        <repository>
+            <id>william278.net</id>
+            <url>https://repo.william278.net/releases</url>
+        </repository>
+        <repository>
+            <id>glaremasters repo</id>
+            <url>https://repo.glaremasters.me/repository/towny/</url>
+        </repository>
+        <repository>
+            <id>bentobox</id>
+            <url>https://repo.codemc.io/repository/bentoboxworld/</url>
+        </repository>
+        <repository>
+            <id>factionsuuid</id>
+            <url>https://dependency.download/releases</url>
+        </repository>
+        <repository>
+            <id>alessiodp-repo</id>
+            <url>https://repo.alessiodp.com/releases/</url>
+        </repository>
+        <repository>
+            <id>roinujnosde-repo</id>
+            <url>https://repo.roinujnosde.me/releases/</url>
+        </repository>
+        <repository>
+            <id>mcmmo-repo</id>
+            <url>https://nexus.neetgames.com/repository/maven-public</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>placeholderapi-repo</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
+        <repository>
+            <id>ProjectUnified-MavenRepo</id>
+            <url>https://projectunified.github.io/MavenRepo/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.18.2-R0.1-20220607.160742-53</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>26.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
