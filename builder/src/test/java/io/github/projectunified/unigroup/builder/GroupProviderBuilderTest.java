@@ -243,7 +243,7 @@ class GroupProviderBuilderTest {
         assertInstanceOf(ErrorGroupProvider.class, provider);
         ErrorGroupProvider errorProvider = (ErrorGroupProvider) provider;
         assertTrue(errorProvider.getError().isPresent());
-        assertTrue(errorProvider.getError().get().getMessage().contains("Unknown group provider type: towny"));
+        assertTrue(errorProvider.getError().get().getMessage().contains("Group provider is not available: towny"));
     }
 
     @Test
