@@ -20,6 +20,7 @@ import io.github.projectunified.unigroup.towny.TownyGroupType;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 /**
@@ -27,7 +28,7 @@ import java.util.function.Function;
  */
 public class GroupProviderBuilder {
     private final Plugin plugin;
-    private final Map<String, Function<Map<String, Object>, GroupProvider>> registered = new HashMap<>();
+    private final Map<String, GroupProviderEntry> registered = new HashMap<>();
 
     /**
      * Create a new GroupProviderBuilder with the specified hosting plugin.
@@ -39,120 +40,89 @@ public class GroupProviderBuilder {
         registerDefaultProviders();
     }
 
-    private void register(Function<Map<String, Object>, GroupProvider> function, String... types) {
+    private void register(BooleanSupplier available, Function<Map<String, Object>, GroupProvider> creator, String... types) {
         for (String type : types) {
-            registered.put(type.toLowerCase(Locale.ROOT), function);
+            registered.put(type.toLowerCase(Locale.ROOT), new GroupProviderEntry(available, creator));
         }
     }
 
     private void registerDefaultProviders() {
-        // SuperiorSkyblock
-        if (SuperiorSkyblockGroupProvider.isAvailable()) {
-            register(map -> new SuperiorSkyblockGroupProvider(), "superiorskyblock", "superiorskyblock2");
-        }
-
-        // HuskTowns
-        if (HuskTownsGroupProvider.isAvailable()) {
-            register(map -> new HuskTownsGroupProvider(), "husktowns");
-        }
-
-        // Towny
-        if (TownyGroupProvider.isAvailable()) {
-            register(map -> {
-                TownyGroupType type = TownyGroupType.TOWN;
-                Object rawType = map.get("towny-type");
-                if (rawType != null) {
-                    try {
-                        type = TownyGroupType.valueOf(rawType.toString().trim().toUpperCase(Locale.ROOT));
-                    } catch (IllegalArgumentException e) {
-                        type = null;
+        register(SuperiorSkyblockGroupProvider::isAvailable, map -> new SuperiorSkyblockGroupProvider(), "superiorskyblock", "superiorskyblock2");
+        register(HuskTownsGroupProvider::isAvailable, map -> new HuskTownsGroupProvider(), "husktowns");
+        register(
+                TownyGroupProvider::isAvailable,
+                map -> {
+                    TownyGroupType type = TownyGroupType.TOWN;
+                    Object rawType = map.get("towny-type");
+                    if (rawType != null) {
+                        try {
+                            type = TownyGroupType.valueOf(rawType.toString().trim().toUpperCase(Locale.ROOT));
+                        } catch (IllegalArgumentException e) {
+                            type = null;
+                        }
                     }
-                }
-                return new TownyGroupProvider(type);
-            }, "towny");
-        }
-
-        // BentoBox
-        if (BentoBoxGroupProvider.isAvailable()) {
-            register(map -> {
-                String gamemode = Optional.ofNullable(map.get("gamemode"))
-                        .map(Objects::toString)
-                        .orElse(null);
-                return new BentoBoxGroupProvider(gamemode);
-            }, "bentobox");
-        }
-
-        // FactionsUUID
-        if (FactionsUUIDGroupProvider.isAvailable()) {
-            register(map -> new FactionsUUIDGroupProvider(), "factionsuuid", "factions");
-        }
-
-        // Kingdoms / KingdomsX
-        if (KingdomsGroupProvider.isAvailable()) {
-            register(map -> {
-                KingdomsGroupType type = KingdomsGroupType.KINGDOM;
-                Object rawType = map.get("kingdoms-type");
-                if (rawType != null) {
-                    try {
-                        type = KingdomsGroupType.valueOf(rawType.toString().trim().toUpperCase(Locale.ROOT));
-                    } catch (IllegalArgumentException e) {
-                        type = null;
+                    return new TownyGroupProvider(type);
+                },
+                "towny"
+        );
+        register(
+                BentoBoxGroupProvider::isAvailable,
+                map -> {
+                    String gamemode = Optional.ofNullable(map.get("gamemode"))
+                            .map(Objects::toString)
+                            .orElse(null);
+                    return new BentoBoxGroupProvider(gamemode);
+                },
+                "bentobox"
+        );
+        register(FactionsUUIDGroupProvider::isAvailable, map -> new FactionsUUIDGroupProvider(), "factionsuuid", "factions");
+        register(
+                KingdomsGroupProvider::isAvailable,
+                map -> {
+                    KingdomsGroupType type = KingdomsGroupType.KINGDOM;
+                    Object rawType = map.get("kingdoms-type");
+                    if (rawType != null) {
+                        try {
+                            type = KingdomsGroupType.valueOf(rawType.toString().trim().toUpperCase(Locale.ROOT));
+                        } catch (IllegalArgumentException e) {
+                            type = null;
+                        }
                     }
-                }
-                return new KingdomsGroupProvider(type);
-            }, "kingdoms", "kingdomsx");
-        }
-
-        // Lands
-        if (LandsGroupProvider.isAvailable()) {
-            register(map -> {
-                LandsGroupType type = LandsGroupType.LAND;
-                Object rawType = map.get("lands-type");
-                if (rawType != null) {
-                    try {
-                        type = LandsGroupType.valueOf(rawType.toString().trim().toUpperCase(Locale.ROOT));
-                    } catch (IllegalArgumentException e) {
-                        type = null;
+                    return new KingdomsGroupProvider(type);
+                },
+                "kingdoms", "kingdomsx"
+        );
+        register(
+                LandsGroupProvider::isAvailable,
+                map -> {
+                    LandsGroupType type = LandsGroupType.LAND;
+                    Object rawType = map.get("lands-type");
+                    if (rawType != null) {
+                        try {
+                            type = LandsGroupType.valueOf(rawType.toString().trim().toUpperCase(Locale.ROOT));
+                        } catch (IllegalArgumentException e) {
+                            type = null;
+                        }
                     }
-                }
-                return new LandsGroupProvider(plugin, type);
-            }, "lands");
-        }
-
-        // BetterTeams
-        if (BetterTeamsGroupProvider.isAvailable()) {
-            register(map -> new BetterTeamsGroupProvider(), "betterteams");
-        }
-
-        // Parties
-        if (PartiesGroupProvider.isAvailable()) {
-            register(map -> new PartiesGroupProvider(), "parties");
-        }
-
-        // mcMMO
-        if (McMMOGroupProvider.isAvailable()) {
-            register(map -> new McMMOGroupProvider(), "mcmmo");
-        }
-
-        // SimpleClans
-        if (SimpleClansGroupProvider.isAvailable()) {
-            register(map -> new SimpleClansGroupProvider(), "simpleclans");
-        }
-
-        // FactionsBridge
-        if (FactionsBridgeGroupProvider.isAvailable()) {
-            register(map -> new FactionsBridgeGroupProvider(), "factionsbridge");
-        }
-
-        // PlaceholderAPI
-        if (PlaceholderGroupProvider.isAvailable()) {
-            register(map -> {
-                String owner = Optional.ofNullable(map.get("owner")).map(Object::toString).orElse("");
-                String display = Optional.ofNullable(map.get("display")).map(Object::toString).orElse("");
-                boolean online = Optional.ofNullable(map.get("online")).map(Object::toString).map(Boolean::parseBoolean).orElse(false);
-                return new PlaceholderGroupProvider(owner, display, online);
-            }, "placeholder", "placeholderapi", "papi");
-        }
+                    return new LandsGroupProvider(plugin, type);
+                },
+                "lands"
+        );
+        register(BetterTeamsGroupProvider::isAvailable, map -> new BetterTeamsGroupProvider(), "betterteams");
+        register(PartiesGroupProvider::isAvailable, map -> new PartiesGroupProvider(), "parties");
+        register(McMMOGroupProvider::isAvailable, map -> new McMMOGroupProvider(), "mcmmo");
+        register(SimpleClansGroupProvider::isAvailable, map -> new SimpleClansGroupProvider(), "simpleclans");
+        register(FactionsBridgeGroupProvider::isAvailable, map -> new FactionsBridgeGroupProvider(), "factionsbridge");
+        register(
+                PlaceholderGroupProvider::isAvailable,
+                map -> {
+                    String owner = Optional.ofNullable(map.get("owner")).map(Object::toString).orElse("");
+                    String display = Optional.ofNullable(map.get("display")).map(Object::toString).orElse("");
+                    boolean online = Optional.ofNullable(map.get("online")).map(Object::toString).map(Boolean::parseBoolean).orElse(false);
+                    return new PlaceholderGroupProvider(owner, display, online);
+                },
+                "placeholder", "placeholderapi", "papi"
+        );
     }
 
     /**
@@ -176,15 +146,29 @@ public class GroupProviderBuilder {
             return new ErrorGroupProvider(new IllegalArgumentException("Provider type is not specified"));
         }
 
-        Function<Map<String, Object>, GroupProvider> creator = registered.get(type);
-        if (creator == null) {
+        GroupProviderEntry entry = registered.get(type);
+        if (entry == null) {
             return new ErrorGroupProvider(new IllegalArgumentException("Unknown group provider type: " + type));
         }
 
+        if (!entry.available.getAsBoolean()) {
+            return new ErrorGroupProvider(new IllegalArgumentException("Group provider is not available: " + type));
+        }
+
         try {
-            return creator.apply(map);
+            return entry.creator.apply(map);
         } catch (Throwable t) {
             return new ErrorGroupProvider(t);
+        }
+    }
+
+    private static final class GroupProviderEntry {
+        final BooleanSupplier available;
+        final Function<Map<String, Object>, GroupProvider> creator;
+
+        private GroupProviderEntry(BooleanSupplier available, Function<Map<String, Object>, GroupProvider> creator) {
+            this.available = available;
+            this.creator = creator;
         }
     }
 }
