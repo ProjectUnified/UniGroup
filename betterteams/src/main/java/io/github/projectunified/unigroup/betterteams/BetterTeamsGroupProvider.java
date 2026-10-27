@@ -1,7 +1,7 @@
 package io.github.projectunified.unigroup.betterteams;
 
-import io.github.projectunified.unigroup.core.Group;
 import io.github.projectunified.unigroup.core.GroupProvider;
+import io.github.projectunified.unigroup.core.GroupResponse;
 import org.bukkit.Bukkit;
 
 import java.util.UUID;
@@ -12,7 +12,7 @@ public class BetterTeamsGroupProvider implements GroupProvider {
     }
 
     @Override
-    public Group getGroupByMember(UUID member) {
-        return new BetterTeamsGroup(member);
+    public GroupResponse byMember(UUID member) {
+        return new BetterTeamsGroupResponse(member);
     }
 }

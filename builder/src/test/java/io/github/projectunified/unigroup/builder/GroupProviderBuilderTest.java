@@ -2,8 +2,8 @@ package io.github.projectunified.unigroup.builder;
 
 import io.github.projectunified.unigroup.bentobox.BentoBoxGroupProvider;
 import io.github.projectunified.unigroup.betterteams.BetterTeamsGroupProvider;
-import io.github.projectunified.unigroup.core.Group;
 import io.github.projectunified.unigroup.core.GroupProvider;
+import io.github.projectunified.unigroup.core.GroupResponse;
 import io.github.projectunified.unigroup.factionsbridge.FactionsBridgeGroupProvider;
 import io.github.projectunified.unigroup.factionsuuid.FactionsUUIDGroupProvider;
 import io.github.projectunified.unigroup.husktowns.HuskTownsGroupProvider;
@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 
 class GroupProviderBuilderTest {
     private PluginManager pluginManager;
+    private Plugin plugin;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +51,9 @@ class GroupProviderBuilderTest {
         pluginManager = mock(PluginManager.class);
         when(server.getPluginManager()).thenReturn(pluginManager);
         Bukkit.setServer(server);
+
+        plugin = mock(Plugin.class);
+        when(plugin.getName()).thenReturn("TestPlugin");
 
         // By default, mock all plugins as present
         Plugin dummyPlugin = mock(Plugin.class);
@@ -68,7 +72,7 @@ class GroupProviderBuilderTest {
 
     @Test
     void testSuperiorSkyblockAliases() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
 
         Map<String, Object> map1 = Collections.singletonMap("type", "superiorskyblock");
         assertInstanceOf(SuperiorSkyblockGroupProvider.class, builder.build(map1));
@@ -79,14 +83,14 @@ class GroupProviderBuilderTest {
 
     @Test
     void testHuskTowns() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "HuskTowns");
         assertInstanceOf(HuskTownsGroupProvider.class, builder.build(map));
     }
 
     @Test
     void testTownyTypes() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
 
         Map<String, Object> townMap = new HashMap<>();
         townMap.put("type", "towny");
@@ -105,7 +109,7 @@ class GroupProviderBuilderTest {
 
     @Test
     void testBentoBox() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = new HashMap<>();
         map.put("type", "BentoBox");
         map.put("gamemode", "bskyblock");
@@ -116,7 +120,7 @@ class GroupProviderBuilderTest {
 
     @Test
     void testFactionsAliases() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
 
         Map<String, Object> map1 = Collections.singletonMap("type", "factionsuuid");
         assertInstanceOf(FactionsUUIDGroupProvider.class, builder.build(map1));
@@ -127,7 +131,7 @@ class GroupProviderBuilderTest {
 
     @Test
     void testKingdomsAliasesAndTypes() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
 
         Map<String, Object> map1 = new HashMap<>();
         map1.put("type", "kingdoms");
@@ -146,7 +150,7 @@ class GroupProviderBuilderTest {
 
     @Test
     void testLandsTypes() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
 
         Map<String, Object> landMap = new HashMap<>();
         landMap.put("type", "lands");
@@ -176,42 +180,42 @@ class GroupProviderBuilderTest {
 
     @Test
     void testBetterTeams() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "BetterTeams");
         assertInstanceOf(BetterTeamsGroupProvider.class, builder.build(map));
     }
 
     @Test
     void testParties() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "parties");
         assertInstanceOf(PartiesGroupProvider.class, builder.build(map));
     }
 
     @Test
     void testMcMMO() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "mcMMO");
         assertInstanceOf(McMMOGroupProvider.class, builder.build(map));
     }
 
     @Test
     void testSimpleClans() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "SimpleClans");
         assertInstanceOf(SimpleClansGroupProvider.class, builder.build(map));
     }
 
     @Test
     void testFactionsBridge() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "factionsbridge");
         assertInstanceOf(FactionsBridgeGroupProvider.class, builder.build(map));
     }
 
     @Test
     void testPlaceholderApi() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
 
         Map<String, Object> map = new HashMap<>();
         map.put("type", "papi");
@@ -232,18 +236,19 @@ class GroupProviderBuilderTest {
         // When Towny plugin is null (not available)
         when(pluginManager.getPlugin("Towny")).thenReturn(null);
 
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "towny");
         GroupProvider provider = builder.build(map);
 
         assertInstanceOf(ErrorGroupProvider.class, provider);
-        assertTrue(provider.getError().isPresent());
-        assertTrue(provider.getError().get().getMessage().contains("Unknown group provider type: towny"));
+        ErrorGroupProvider errorProvider = (ErrorGroupProvider) provider;
+        assertTrue(errorProvider.getError().isPresent());
+        assertTrue(errorProvider.getError().get().getMessage().contains("Unknown group provider type: towny"));
     }
 
     @Test
     void testMissingTypeWithOwnerDefaultsToPlaceholder() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("owner", "%player_name%");
         GroupProvider provider = builder.build(map);
         assertInstanceOf(PlaceholderGroupProvider.class, provider);
@@ -251,64 +256,71 @@ class GroupProviderBuilderTest {
 
     @Test
     void testMissingTypeWithoutOwnerReturnsError() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         GroupProvider provider = builder.build(Collections.emptyMap());
         assertInstanceOf(ErrorGroupProvider.class, provider);
-        assertTrue(provider.getError().isPresent());
-        assertInstanceOf(IllegalArgumentException.class, provider.getError().get());
+        ErrorGroupProvider errorProvider = (ErrorGroupProvider) provider;
+        assertTrue(errorProvider.getError().isPresent());
+        assertInstanceOf(IllegalArgumentException.class, errorProvider.getError().get());
     }
 
     @Test
     void testUnknownTypeReturnsError() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = Collections.singletonMap("type", "unknown_plugin_xyz");
         GroupProvider provider = builder.build(map);
         assertInstanceOf(ErrorGroupProvider.class, provider);
-        assertTrue(provider.getError().isPresent());
-        assertTrue(provider.getError().get().getMessage().contains("Unknown group provider type"));
+        ErrorGroupProvider errorProvider = (ErrorGroupProvider) provider;
+        assertTrue(errorProvider.getError().isPresent());
+        assertTrue(errorProvider.getError().get().getMessage().contains("Unknown group provider type"));
     }
 
     @Test
     void testInvalidEnumTypeReturnsError() {
-        GroupProviderBuilder builder = new GroupProviderBuilder();
+        GroupProviderBuilder builder = new GroupProviderBuilder(plugin);
         Map<String, Object> map = new HashMap<>();
         map.put("type", "towny");
         map.put("towny-type", "INVALID_KIND");
         GroupProvider provider = builder.build(map);
         assertInstanceOf(TownyGroupProvider.class, provider);
-        assertTrue(provider.getError().isPresent());
+        GroupResponse response = provider.byMember(UUID.randomUUID());
+        assertNotNull(response.error());
+        assertFalse(response.handled());
+        assertNull(response.group());
     }
 
     @Test
     void testErrorGroupProviderReturnsUnhandledGroup() {
         ErrorGroupProvider provider = new ErrorGroupProvider(new RuntimeException("Test error"));
         UUID uuid = UUID.randomUUID();
-        Group group = provider.getGroupByMember(uuid);
-        assertNotNull(group);
-        assertFalse(group.handled());
-        assertFalse(group.exists());
-        assertNull(group.owner());
-        assertNull(group.name());
+        GroupResponse response = provider.byMember(uuid);
+        assertNotNull(response);
+        assertFalse(response.handled());
+        assertNotNull(response.error());
+        assertNull(response.group());
     }
 
     @Test
     void testUnhandledGroupOnNullType() {
         TownyGroupProvider townyProvider = new TownyGroupProvider(null);
-        Group townyGroup = townyProvider.getGroupByMember(UUID.randomUUID());
-        assertNotNull(townyGroup);
-        assertFalse(townyGroup.handled());
-        assertFalse(townyGroup.exists());
-        assertNull(townyGroup.owner());
-        assertNull(townyGroup.name());
+        GroupResponse townyResponse = townyProvider.byMember(UUID.randomUUID());
+        assertNotNull(townyResponse);
+        assertFalse(townyResponse.handled());
+        assertNotNull(townyResponse.error());
+        assertNull(townyResponse.group());
 
         KingdomsGroupProvider kingdomsProvider = new KingdomsGroupProvider(null);
-        Group kingdomsGroup = kingdomsProvider.getGroupByMember(UUID.randomUUID());
-        assertNotNull(kingdomsGroup);
-        assertFalse(kingdomsGroup.handled());
+        GroupResponse kingdomsResponse = kingdomsProvider.byMember(UUID.randomUUID());
+        assertNotNull(kingdomsResponse);
+        assertFalse(kingdomsResponse.handled());
+        assertNotNull(kingdomsResponse.error());
+        assertNull(kingdomsResponse.group());
 
         LandsGroupProvider landsProvider = new LandsGroupProvider(null, null);
-        Group landsGroup = landsProvider.getGroupByMember(UUID.randomUUID());
-        assertNotNull(landsGroup);
-        assertFalse(landsGroup.handled());
+        GroupResponse landsResponse = landsProvider.byMember(UUID.randomUUID());
+        assertNotNull(landsResponse);
+        assertFalse(landsResponse.handled());
+        assertNotNull(landsResponse.error());
+        assertNull(landsResponse.group());
     }
 }
