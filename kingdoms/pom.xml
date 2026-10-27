@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.github.cryptomorin</groupId>
             <artifactId>kingdoms</artifactId>
-            <version>1.17.10-BETA</version>
+            <version>1.17.18.1-BETA</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

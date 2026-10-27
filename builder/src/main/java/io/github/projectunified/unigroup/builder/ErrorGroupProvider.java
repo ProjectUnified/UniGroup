@@ -1,7 +1,7 @@
 package io.github.projectunified.unigroup.builder;
 
-import io.github.projectunified.unigroup.core.Group;
 import io.github.projectunified.unigroup.core.GroupProvider;
+import io.github.projectunified.unigroup.core.GroupResponse;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -11,28 +11,6 @@ import java.util.UUID;
  * A fallback {@link GroupProvider} representing an error during creation or configuration.
  */
 public class ErrorGroupProvider implements GroupProvider {
-    private static final Group UNHANDLED_GROUP = new Group() {
-        @Override
-        public boolean handled() {
-            return false;
-        }
-
-        @Override
-        public boolean exists() {
-            return false;
-        }
-
-        @Override
-        public UUID owner() {
-            return null;
-        }
-
-        @Override
-        public String name() {
-            return null;
-        }
-    };
-
     private final Throwable throwable;
 
     /**
@@ -44,14 +22,17 @@ public class ErrorGroupProvider implements GroupProvider {
         this.throwable = Objects.requireNonNull(throwable, "throwable");
     }
 
-    @Override
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
     public Optional<Throwable> getError() {
         return Optional.of(throwable);
     }
 
     @Override
-    public Group getGroupByMember(UUID member) {
-        return UNHANDLED_GROUP;
+    public GroupResponse byMember(UUID member) {
+        return GroupResponse.error(throwable);
     }
 
     @Override

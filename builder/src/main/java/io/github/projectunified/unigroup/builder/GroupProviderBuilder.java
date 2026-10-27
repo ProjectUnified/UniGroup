@@ -19,11 +19,7 @@ import io.github.projectunified.unigroup.towny.TownyGroupProvider;
 import io.github.projectunified.unigroup.towny.TownyGroupType;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -36,18 +32,11 @@ public class GroupProviderBuilder {
     /**
      * Create a new GroupProviderBuilder with the specified hosting plugin.
      *
-     * @param plugin the plugin instance, or null if standalone
+     * @param plugin the plugin instance
      */
     public GroupProviderBuilder(Plugin plugin) {
-        this.plugin = plugin;
+        this.plugin = Objects.requireNonNull(plugin, "plugin cannot be null");
         registerDefaultProviders();
-    }
-
-    /**
-     * Create a new GroupProviderBuilder without a plugin instance.
-     */
-    public GroupProviderBuilder() {
-        this(null);
     }
 
     private void register(Function<Map<String, Object>, GroupProvider> function, String... types) {
@@ -93,7 +82,7 @@ public class GroupProviderBuilder {
             }, "bentobox");
         }
 
-        // FactionsUUID / Factions
+        // FactionsUUID
         if (FactionsUUIDGroupProvider.isAvailable()) {
             register(map -> new FactionsUUIDGroupProvider(), "factionsuuid", "factions");
         }
@@ -126,7 +115,7 @@ public class GroupProviderBuilder {
                         type = null;
                     }
                 }
-                return plugin != null ? new LandsGroupProvider(plugin, type) : new LandsGroupProvider(type);
+                return new LandsGroupProvider(plugin, type);
             }, "lands");
         }
 
